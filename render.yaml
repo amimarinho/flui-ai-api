@@ -2,12 +2,12 @@ services:
   - type: web
     name: flui-ai-api
     runtime: node
+    plan: free
     branch: main
     buildCommand: npm ci && npx prisma generate && npm run build
     preDeployCommand: npx prisma migrate deploy
     startCommand: node dist/src/main
     healthCheckPath: /
-    initialDeployHook: npm run prisma:seed
     envVars:
       - key: NODE_VERSION
         value: "22"
@@ -22,6 +22,7 @@ services:
 
 databases:
   - name: flui-ai
+    plan: free
     postgresMajorVersion: "16"
     databaseName: flui_ai
     user: flui
