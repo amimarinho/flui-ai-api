@@ -10,21 +10,8 @@ try {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors({
-    origin(
-      requestOrigin: string | undefined,
-      callback: (error: Error | null, allow?: boolean) => void,
-    ) {
-      if (
-        !requestOrigin ||
-        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(requestOrigin)
-      ) {
-        callback(null, true);
-        return;
-      }
-      callback(null, false);
-    },
-  });
+  // Any origin is allowed until the allowlist is tightened again.
+  app.enableCors({ origin: true });
   const config = new DocumentBuilder()
     .setTitle('Flui AI API')
     .setDescription(
