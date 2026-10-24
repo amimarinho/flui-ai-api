@@ -6,6 +6,15 @@ import {
   Logger,
   Query,
 } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
+import { PlaceCategory } from '@prisma/client';
+import { ErrorMessageDto, PlaceResultDto } from './place.dto';
 import { PlacesService } from './places.service';
 import {
   isLatitude,
@@ -14,6 +23,7 @@ import {
   readNumber,
 } from './placeQuery';
 
+@ApiTags('Places')
 @Controller()
 export class PlacesController {
   private readonly logger = new Logger(PlacesController.name);
@@ -21,6 +31,24 @@ export class PlacesController {
   constructor(private readonly places: PlacesService) {}
 
   @Get('places')
+  @ApiOperation({
+    summary: 'List places in one category',
+    description:
+      'Returns places in the given category within 2 km, nearest first. Each place includes address, rating, status, opening hours, power, connectors, and distance. Coordinates more than 2 km from ARCA (−23.5358, −46.7454) are searched from that point.',
+  })
+  @ApiQuery({
+    name: 'category',
+    enum: PlaceCategory,
+    example: PlaceCategory.coffee,
+  })
+  @ApiQuery({ name: 'latitude', example: -23.5358 })
+  @ApiQuery({ name: 'longitude', example: -46.7454 })
+  @ApiOkResponse({ type: PlaceResultDto, isArray: true })
+  @ApiBadRequestResponse({
+    type: ErrorMessageDto,
+    description:
+      'A missing category returns "Informe a categoria." An unknown category returns "Categoria desconhecida." A bad latitude returns "Informe a latitude." A bad longitude returns "Informe a longitude."',
+  })
   async list(
     @Query('category') category: unknown,
     @Query('latitude') latitude: unknown,

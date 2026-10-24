@@ -7,15 +7,18 @@ import {
   Logger,
   Post,
 } from '@nestjs/common';
+import {
+  ApiBadGatewayResponse,
+  ApiBadRequestResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AskService } from './ask.service';
 import { isLatitude, isLongitude } from './placeQuery';
+import { AskBodyDto, AskedPlaceDto, ErrorMessageDto } from './place.dto';
 
-type AskBody = {
-  text?: unknown;
-  latitude?: unknown;
-  longitude?: unknown;
-};
-
+@ApiTags('Ask')
 @Controller()
 export class AskController {
   private readonly logger = new Logger(AskController.name);
@@ -24,7 +27,23 @@ export class AskController {
 
   @Post('ask')
   @HttpCode(200)
-  async ask(@Body() body: AskBody) {
+  @ApiOperation({
+    summary: 'Find places from a question',
+    description:
+      'Sends the text to Gemini. A question about electric-car charging, coffee, or a gas station returns the nearest matches. Any other question returns an empty list.',
+  })
+  @ApiOkResponse({ type: AskedPlaceDto, isArray: true })
+  @ApiBadRequestResponse({
+    type: ErrorMessageDto,
+    description:
+      'Empty text returns "Informe o que você quer buscar." A latitude outside -90 to 90 returns "Informe a latitude." A longitude outside -180 to 180 returns "Informe a longitude."',
+  })
+  @ApiBadGatewayResponse({
+    type: ErrorMessageDto,
+    description:
+      'Gemini or the place lookup failed. The message is "Não consegui consultar os lugares."',
+  })
+  async ask(@Body() body: AskBodyDto) {
     const text = typeof body.text === 'string' ? body.text.trim() : '';
     this.logger.debug(
       `ask ${JSON.stringify(text)} @ ${String(body.latitude)},${String(body.longitude)}`,
@@ -68,4 +87,3 @@ export class AskController {
     }
   }
 }
-
