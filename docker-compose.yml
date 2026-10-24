@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: flui
+      POSTGRES_PASSWORD: flui
+      POSTGRES_DB: flui_ai
+    ports:
+      - "5433:5432"
+    volumes:
+      - flui_ai_pg:/var/lib/postgresql/data
+
+volumes:
+  flui_ai_pg:
